@@ -26,16 +26,16 @@ const comments = [
 const renderComments = () => {
   const commentHtml = comments
     .map((comment, index) => {
-      return `<li class="comment">
+      return `<li class="comment" data-index = '${index}'>
       <div class="comment-header">
         <div>${comment.name}</div>
         <div>${comment.date}</div>
       </div>
       <div class="comment-body">
         <div class="comment-text">
-          ${comment.comment}
+          ${comment.comment.replaceAll('QUOTE_BEGIN', "<div class='quote'>").replaceAll('QUOTE_END', '</div>')}
         </div>
-        <button data-index ='${index}' class='remove add-form-button'>${comment.button}</button>
+        <!-- <button data-index ='${index}' class='remove add-form-button'>${comment.button}</button> -->
       </div>
       <div class="comment-footer">
         <div class="likes">
@@ -50,55 +50,60 @@ const renderComments = () => {
   listElement.innerHTML = commentHtml;
   likeButton();
   checkParams();
-  editComment();
-  saveComment ()
+  // editComment();
+  answer();
+  // saveComment();
+  // answer();
+  inputClick ()
 };
 
 renderComments();
 
-function editComment() {
-  const editElement = document.querySelectorAll(".remove");
-  
-  for (const i of editElement) {
-    const commentOld = comments[i.dataset.index].comment;
-    i.addEventListener("click", () => {
-      comments[i.dataset.index].comment = `<textarea
-      id="text-input-in"
-      type="textarea"
-      class="add-form-text"
+// function editComment() {
+//   const editElement = document.querySelectorAll(".remove");
 
-      rows="4"
-    ></textarea>`;
-      
-      comments[i.dataset.index].button = "сохранить";
+//   for (const i of editElement) {
+//     const commentOld = comments[i.dataset.index].comment;
+//     i.addEventListener("click", (event) => {
+//       event.stopPropagation();
+//       comments[i.dataset.index].comment = `<textarea
+//       id="text-input-in"
+//       type="textarea"
+//       class="add-form-text"
 
-      renderComments();
-      const textInputElement = document.getElementById("text-input-in");
-      textInputElement.value = commentOld;
-    });
-  }
-}
+//       rows="4"
+//     ></textarea>`;
 
+//       comments[i.dataset.index].button = "сохранить";
 
-function saveComment () {
-  const editElement = document.querySelectorAll('.remove');
-  const textInputElementIn = document.getElementById("text-input-in");
+//       renderComments();
+//       const textInputElement = document.getElementById("text-input-in");
+//       textInputElement.value = commentOld;
+//     });
+//   }
+// }
 
-  for (const i of editElement) {
-    i.addEventListener('click', () => {
+// function saveComment() {
+//   const editElement = document.querySelectorAll(".remove");
+//   const textInputElementIn = document.getElementById("text-input-in");
 
-    comments[i.dataset.index].comment = textInputElementIn.value;
-    comments[i.dataset.index].button = 'редактировать';
-    renderComments();
-    })
-  }
-}
-
+//   for (const i of editElement) {
+//     i.addEventListener("click", (event) => {
+//       console.log(textInputElementIn.value);
+//       event.stopPropagation();
+//       comments[i.dataset.index].comment = textInputElementIn.value;
+//       comments[i.dataset.index].button = "редактировать";
+//       renderComments();
+//     });
+//     inputClick ();
+//   }
+// }
 
 function likeButton() {
   const likeElements = document.querySelectorAll(".like-button");
   for (const i of likeElements) {
-    i.addEventListener("click", () => {
+    i.addEventListener("click", (event) => {
+      event.stopPropagation();
       if (i.classList.contains("-active-like")) {
         comments[i.dataset.index].likeIn = "";
         comments[i.dataset.index].likeCount -= 1;
@@ -151,9 +156,17 @@ buttonElement.addEventListener("click", () => {
   let now = new Date().toLocaleString("ru-RU", options);
 
   comments.push({
-    name: nameInputElement.value,
+    name: nameInputElement.value
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;"),
     date: now.replace(",", " "),
-    comment: textInputElement.value,
+    comment: textInputElement.value
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;"),
     likeCount: 0,
     likeIn: "",
     button: "редактировать",
@@ -163,7 +176,8 @@ buttonElement.addEventListener("click", () => {
   textInputElement.value = "";
 
   renderComments();
-  editComment();
+  answer();
+  // editComment();
 });
 
 buttonDelElement.addEventListener("click", () => {
@@ -172,3 +186,26 @@ buttonDelElement.addEventListener("click", () => {
     listElement.innerHTML.lastIndexOf('<li class="comment">')
   );
 });
+
+
+function answer() {
+  const commentBox = document.querySelectorAll(".comment");
+  let x = ''
+  for (const i of commentBox) {
+    i.addEventListener("click", () => {
+      x = `QUOTE_BEGIN ${comments[i.dataset.index].name}: \n ${comments[i.dataset.index].comment} QUOTE_END`;
+      textInputElement.value = `QUOTE_BEGIN ${comments[i.dataset.index].name}: \n ${comments[i.dataset.index].comment} QUOTE_END`;
+      //  ">" + comments[i.dataset.index].comment + "\n\n" + comments[i.dataset.index].name + ',' + ' ';
+    }); 
+  } 
+};
+
+
+function inputClick () {
+  const inputInElement = document.querySelectorAll('.add-form-text');
+  for (const i of inputInElement) {
+    i.addEventListener('click', (event)=>{
+      event.stopPropagation();
+    });
+  }
+}
