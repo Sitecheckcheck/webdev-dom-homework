@@ -155,7 +155,7 @@ buttonElement.addEventListener("click", () => {
     minute: "2-digit",
   };
 
-  let now = new Date().toLocaleString("ru-RU", options);
+  // let now = new Date().toLocaleString("ru-RU", options);
 
   const result = fetch(
     "https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments",
