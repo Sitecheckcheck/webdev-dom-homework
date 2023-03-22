@@ -171,26 +171,27 @@ buttonElement.addEventListener("click", () => {
   result.then((response) => {
     const jsonPromise = response.json();
     jsonPromise.then((responseData) => {
-      const options = {
-        year: "2-digit",
-        month: "numeric",
-        day: "numeric",
-        timezone: "UTC",
-        hour: "numeric",
-        minute: "2-digit",
-      };
+      console.log(responseData);
+      // const options = {
+      //   year: "2-digit",
+      //   month: "numeric",
+      //   day: "numeric",
+      //   timezone: "UTC",
+      //   hour: "numeric",
+      //   minute: "2-digit",
+      // };
 
-      const appComments = responseData.comments.map((comment) => {
-        return {
-          name: comment.author.name,
-          date: new Date(comment.date).toLocaleString("ru-RU", options),
-          text: comment.text,
-          likes: comment.likes,
-          isLike: false,
-        };
-      });
+      // const appComments = responseData.comments.map((comment) => {
+      //   return {
+      //     name: comment.author.name,
+      //     date: new Date(comment.date).toLocaleString("ru-RU", options),
+      //     text: comment.text,
+      //     likes: comment.likes,
+      //     isLike: false,
+      //   };
+      // });
 
-      comments = appComments;
+      // comments = appComments;
       // renderComments();
     });
     getApi();
