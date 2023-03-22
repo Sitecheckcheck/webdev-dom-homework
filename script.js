@@ -3,6 +3,9 @@ const buttonDelElement = document.getElementById("delete-button");
 const nameInputElement = document.getElementById("name-input");
 const textInputElement = document.getElementById("text-input");
 const listElement = document.getElementById("list");
+const inputElement = document.querySelector('.add-form');
+let isLoading;
+
 
 function getApi() {
   const result = fetch(
@@ -33,7 +36,7 @@ function getApi() {
           isLike: false,
         };
       });
-
+           
       comments = appComments;
       renderComments();
     });
@@ -42,24 +45,7 @@ function getApi() {
 
 getApi();
 
-let comments = [
-  // {
-  //   name: "Глеб Фокин",
-  //   date: "12.02.22 12:08",
-  //   comment: "Это будет первый комментарий на этой странице",
-  //   likeCount: 3,
-  //   likeIn: "",
-  //   button: "редактировать",
-  // },
-  // {
-  //   name: "Варвара Н.",
-  //   date: "13.02.22 19:22",
-  //   comment: "Мне нравится как оформлена эта страница! ❤",
-  //   likeCount: 75,
-  //   likeIn: "-active-like",
-  //   button: "редактировать",
-  // },
-];
+let comments = [];
 
 const renderComments = () => {
   const commentHtml = comments
@@ -134,30 +120,18 @@ function checkParams() {
   }
 }
 
-document.addEventListener("keyup", function (e) {
-  if (e.keyCode === 13) {
-    document.getElementById("add-button").click();
-  }
-  checkParams();
-});
+
+
+
 
 buttonElement.addEventListener("click", () => {
   if (nameInputElement.value === "" || textInputElement.value === "") {
     return;
   }
 
-  const options = {
-    year: "2-digit",
-    month: "numeric",
-    day: "numeric",
-    timezone: "UTC",
-    hour: "numeric",
-    minute: "2-digit",
-  };
+  isLoading = true;
 
-  // let now = new Date().toLocaleString("ru-RU", options);
-
-  const result = fetch(
+  fetch(
     "https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments",
     {
       method: "POST",
@@ -166,44 +140,27 @@ buttonElement.addEventListener("click", () => {
         name: nameInputElement.value,
       }),
     }
-  );
-
-  result.then((response) => {
-    const jsonPromise = response.json();
-    jsonPromise.then((responseData) => {
-      console.log(responseData);
-      // const options = {
-      //   year: "2-digit",
-      //   month: "numeric",
-      //   day: "numeric",
-      //   timezone: "UTC",
-      //   hour: "numeric",
-      //   minute: "2-digit",
-      // };
-
-      // const appComments = responseData.comments.map((comment) => {
-      //   return {
-      //     name: comment.author.name,
-      //     date: new Date(comment.date).toLocaleString("ru-RU", options),
-      //     text: comment.text,
-      //     likes: comment.likes,
-      //     isLike: false,
-      //   };
-      // });
-
-      // comments = appComments;
-      // renderComments();
-    });
+  )
+  .then(() => {
     getApi();
+    isLoading = false;
+    renderInput();
+  })
+  
+  .catch(() => {
+    conosle.log('произошла ошибка')
   });
 
   nameInputElement.value = "";
   textInputElement.value = "";
-
+  renderInput();
   renderComments();
+  checkParams();
+  
   // answer();
   // editComment();
 });
+
 
 buttonDelElement.addEventListener("click", () => {
   listElement.innerHTML = listElement.innerHTML.substring(
@@ -220,6 +177,57 @@ function inputClick() {
     });
   }
 }
+
+document.addEventListener("keyup", function (e) {
+  if (e.keyCode === 13) {
+    document.getElementById("add-button").click();
+  }
+  checkParams();
+});
+
+
+let inputHtml = '';
+
+
+function renderInput () {
+  
+  if (isLoading === true) {
+    inputHtml =  `
+    <p>
+      Комментарий добавляется...
+    </p>  
+  `;
+      
+  } else {
+    inputHtml = `
+      
+    <input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя">
+    <textarea id="text-input" type="textarea" class="add-form-text" placeholder="Введите ваш коментарий" rows="4"></textarea>
+    <div class="add-form-row">
+      <button id="add-button" class="add-form-button" disabled="" style="background-color: gray;">Написать</button>
+    </div>
+    <div class="add-form-row">
+      <button id="delete-button" class="add-form-button">
+        Удалить последний комментарий
+      </button>
+    </div>
+  `
+  }
+  
+  inputElement.innerHTML = inputHtml;
+  checkParams();
+};
+
+
+
+
+
+// checkParams();
+
+
+
+
+
 
 // function answer() {
 //   const commentBox = document.querySelectorAll(".comment");
