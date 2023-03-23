@@ -3,11 +3,13 @@ const buttonDelElement = document.getElementById("delete-button");
 const nameInputElement = document.getElementById("name-input");
 const textInputElement = document.getElementById("text-input");
 const listElement = document.getElementById("list");
-const inputElement = document.querySelector('.add-form');
-let isLoading;
+const inputElement = document.querySelectorAll(".add-form");
+// let isLoading = false;
 
+// renderInput();
 
 function getApi() {
+  
   const result = fetch(
     "https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments",
     {
@@ -36,14 +38,18 @@ function getApi() {
           isLike: false,
         };
       });
-           
+
       comments = appComments;
       renderComments();
-    });
+      isLoading = false;
+      // renderInput();
+      checkParams();  
+    });    
   });
 }
 
 getApi();
+
 
 let comments = [];
 
@@ -89,7 +95,7 @@ function likeButton() {
   for (const i of likeElements) {
     i.addEventListener("click", (event) => {
       event.stopPropagation();
-
+      checkParams();
       if (i.classList.contains("-active-like")) {
         comments[i.dataset.index].isLike = false;
         comments[i.dataset.index].likes -= 1;
@@ -104,7 +110,7 @@ function likeButton() {
 
 likeButton();
 
-buttonElement.disabled = true;
+// buttonElement.disabled = true;
 
 function checkParams() {
   if (
@@ -120,47 +126,39 @@ function checkParams() {
   }
 }
 
-
-
-
-
 buttonElement.addEventListener("click", () => {
   if (nameInputElement.value === "" || textInputElement.value === "") {
     return;
   }
 
   isLoading = true;
+  // renderInput();
 
-  fetch(
-    "https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments",
-    {
-      method: "POST",
-      body: JSON.stringify({
-        text: textInputElement.value,
-        name: nameInputElement.value,
-      }),
-    }
-  )
-  .then(() => {
-    getApi();
-    isLoading = false;
-    renderInput();
+  fetch("https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments", {
+    method: "POST",
+    body: JSON.stringify({
+      text: textInputElement.value,
+      name: nameInputElement.value,
+    }),
   })
-  
-  .catch(() => {
-    conosle.log('произошла ошибка')
-  });
+    .then(() => {
+      // isLoading = false;
+      getApi();
+    })
+
+    .catch(() => {
+      conosle.log("произошла ошибка");
+    });
 
   nameInputElement.value = "";
   textInputElement.value = "";
-  renderInput();
+  
   renderComments();
   checkParams();
-  
+
   // answer();
   // editComment();
 });
-
 
 buttonDelElement.addEventListener("click", () => {
   listElement.innerHTML = listElement.innerHTML.substring(
@@ -185,22 +183,19 @@ document.addEventListener("keyup", function (e) {
   checkParams();
 });
 
+// let inputHtml = "";
 
-let inputHtml = '';
+function renderInput() {
+  for (const i of inputElement) {
 
-
-function renderInput () {
-  
   if (isLoading === true) {
-    inputHtml =  `
+    i.innerHTML = `
     <p>
       Комментарий добавляется...
     </p>  
   `;
-      
   } else {
-    inputHtml = `
-      
+    i.innerHTML = `   
     <input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя">
     <textarea id="text-input" type="textarea" class="add-form-text" placeholder="Введите ваш коментарий" rows="4"></textarea>
     <div class="add-form-row">
@@ -211,23 +206,13 @@ function renderInput () {
         Удалить последний комментарий
       </button>
     </div>
-  `
+    `;
   }
-  
-  inputElement.innerHTML = inputHtml;
+
   checkParams();
-};
+};}
 
-
-
-
-
-// checkParams();
-
-
-
-
-
+checkParams();
 
 // function answer() {
 //   const commentBox = document.querySelectorAll(".comment");
