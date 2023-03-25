@@ -5,9 +5,11 @@ const textInputElement = document.getElementById("text-input");
 const listElement = document.getElementById("list");
 const inputElement = document.getElementById("input-box");
 
-checkParams();
 
 function fetchRenderComments(){
+
+  inputElement.innerHTML = "<p>Комментарий добавляется...</p>";
+
   return fetch("https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments", {
     method: "GET",
   }).then((response) => {
@@ -31,9 +33,20 @@ function fetchRenderComments(){
         };
       });
 
+      inputElement.innerHTML = `<input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя">
+      <textarea id="text-input" type="textarea" class="add-form-text" placeholder="Введите ваш коментарий" rows="4"></textarea>
+      <div class="add-form-row">
+        <button id="add-button" class="add-form-button" disabled="" style="background-color: gray;">Написать</button>
+      </div>
+      <div class="add-form-row">
+        <button id="delete-button" class="add-form-button">
+          Удалить последний комментарий
+        </button>
+      </div>`;
+
       comments = appComments;
       renderComments();
-      checkParams();
+      
     });
   });
 };
@@ -67,7 +80,6 @@ const renderComments = () => {
 
   listElement.innerHTML = commentHtml;
   likeButton();
-  checkParams();
   inputClick();
 };
 
