@@ -7,7 +7,7 @@ const inputElement = document.getElementById("input-box");
 
 checkParams();
 
-const fetchRenderComments = () => {
+function fetchRenderComments(){
   return fetch("https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments", {
     method: "GET",
   }).then((response) => {
@@ -95,6 +95,11 @@ function likeButton() {
 likeButton();
 
 function checkParams() {
+
+  const nameInputElement = document.getElementById("name-input");
+  const textInputElement = document.getElementById("text-input");
+  const buttonElement = document.getElementById("add-button");
+  
   if (
     nameInputElement.value.length != 0 &&
     textInputElement.value.length != 0
@@ -106,6 +111,43 @@ function checkParams() {
     buttonElement.disabled = true;
     buttonElement.style.opacity = "";
   }
+
+  buttonElement.addEventListener("click", () => {
+    if (nameInputElement.value === "" || textInputElement.value === "") {
+      return;
+    }
+  
+    inputElement.innerHTML = "<p>Комментарий добавляется...</p>";
+  
+    fetch("https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments", {
+      method: "POST",
+      body: JSON.stringify({
+        text: textInputElement.value,
+        name: nameInputElement.value,
+      }),
+    })
+      .then((response) => {
+        return response.json();
+      })
+      .then(()=>{
+        return fetchRenderComments();
+      })
+      .then(() => {
+        inputElement.innerHTML = `<input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя">
+        <textarea id="text-input" type="textarea" class="add-form-text" placeholder="Введите ваш коментарий" rows="4"></textarea>
+        <div class="add-form-row">
+          <button id="add-button" class="add-form-button" disabled="" style="background-color: gray;">Написать</button>
+        </div>
+        <div class="add-form-row">
+          <button id="delete-button" class="add-form-button">
+            Удалить последний комментарий
+          </button>
+        </div>`;
+      });
+  
+    nameInputElement.value = "";
+    textInputElement.value = "";
+  });
 }
 
 buttonElement.addEventListener("click", () => {
@@ -143,7 +185,6 @@ buttonElement.addEventListener("click", () => {
 
   nameInputElement.value = "";
   textInputElement.value = "";
-  checkParams();
 });
 
 renderComments();
