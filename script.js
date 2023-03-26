@@ -5,12 +5,15 @@ const textInputElement = document.getElementById("text-input");
 const listElement = document.getElementById("list");
 const inputElement = document.getElementById("input-box");
 
-checkParams();
+function fetchRenderComments() {
+  inputElement.innerHTML = "<p>Комментарий добавляется...</p>";
 
-function fetchRenderComments(){
-  return fetch("https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments", {
-    method: "GET",
-  }).then((response) => {
+  return fetch(
+    "https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments",
+    {
+      method: "GET",
+    }
+  ).then((response) => {
     response.json().then((responseData) => {
       const options = {
         year: "2-digit",
@@ -31,12 +34,28 @@ function fetchRenderComments(){
         };
       });
 
+      inputElement.innerHTML = `<input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя">
+      <textarea id="text-input" type="textarea" class="add-form-text" placeholder="Введите ваш коментарий" rows="4"></textarea>
+      <div class="add-form-row">
+        <button id="add-button" class="add-form-button" disabled="" style="background-color: gray;">Написать</button>
+      </div>
+      <div class="add-form-row">
+        <button id="delete-button" class="add-form-button">
+          Удалить последний комментарий
+        </button>
+      </div>`;
+
       comments = appComments;
       renderComments();
-      checkParams();
-    });
-  });
-};
+      const buttonDelElement = document.getElementById("delete-button");
+
+      buttonDelElement.addEventListener("click", () => {
+        comments.pop();
+        renderComments();
+      });
+    });   
+  }); 
+}
 
 let comments = [];
 
@@ -67,27 +86,37 @@ const renderComments = () => {
 
   listElement.innerHTML = commentHtml;
   likeButton();
-  checkParams();
   inputClick();
 };
 
 fetchRenderComments();
 renderComments();
 
+function delay(interval = 300) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, interval);
+  });
+}
+
 function likeButton() {
   const likeElements = document.querySelectorAll(".like-button");
   for (const i of likeElements) {
     i.addEventListener("click", (event) => {
       event.stopPropagation();
-      checkParams();
-      if (i.classList.contains("-active-like")) {
-        comments[i.dataset.index].isLike = false;
-        comments[i.dataset.index].likes -= 1;
-      } else {
-        comments[i.dataset.index].isLike = true;
-        comments[i.dataset.index].likes++;
-      }
-      renderComments();
+      i.classList.add("-loading-like");
+      delay(500).then(() => {
+        if (i.classList.contains("-active-like")) {
+          comments[i.dataset.index].isLike = false;
+          comments[i.dataset.index].likes -= 1;
+        } else {
+          comments[i.dataset.index].isLike = true;
+          comments[i.dataset.index].likes++;
+        }
+        i.classList.remove("-loading-like");
+        renderComments();
+      });
     });
   }
 }
@@ -95,11 +124,10 @@ function likeButton() {
 likeButton();
 
 function checkParams() {
-
   const nameInputElement = document.getElementById("name-input");
   const textInputElement = document.getElementById("text-input");
   const buttonElement = document.getElementById("add-button");
-  
+
   if (
     nameInputElement.value.length != 0 &&
     textInputElement.value.length != 0
@@ -116,9 +144,9 @@ function checkParams() {
     if (nameInputElement.value === "" || textInputElement.value === "") {
       return;
     }
-  
+
     inputElement.innerHTML = "<p>Комментарий добавляется...</p>";
-  
+
     fetch("https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments", {
       method: "POST",
       body: JSON.stringify({
@@ -129,7 +157,7 @@ function checkParams() {
       .then((response) => {
         return response.json();
       })
-      .then(()=>{
+      .then(() => {
         return fetchRenderComments();
       })
       .then(() => {
@@ -144,7 +172,7 @@ function checkParams() {
           </button>
         </div>`;
       });
-  
+
     nameInputElement.value = "";
     textInputElement.value = "";
   });
@@ -167,7 +195,7 @@ buttonElement.addEventListener("click", () => {
     .then((response) => {
       return response.json();
     })
-    .then(()=>{
+    .then(() => {
       return fetchRenderComments();
     })
     .then(() => {
@@ -189,13 +217,6 @@ buttonElement.addEventListener("click", () => {
 
 renderComments();
 
-buttonDelElement.addEventListener("click", () => {
-  listElement.innerHTML = listElement.innerHTML.substring(
-    0,
-    listElement.innerHTML.lastIndexOf('<li class="comment">')
-  );
-});
-
 function inputClick() {
   const inputInElement = document.querySelectorAll(".add-form-text");
   for (const i of inputInElement) {
@@ -206,8 +227,8 @@ function inputClick() {
 }
 
 document.addEventListener("keyup", function (e) {
+  checkParams();
   if (e.keyCode === 13) {
     document.getElementById("add-button").click();
   }
-  checkParams();
 });
