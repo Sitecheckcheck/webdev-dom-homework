@@ -166,3 +166,7 @@ body {
 .-loading-like {
   animation: rotating 2s linear infinite;
 }
+
+.loading {
+  display: none;
+}
