@@ -4,8 +4,7 @@ const nameInputElement = document.getElementById("name-input");
 const textInputElement = document.getElementById("text-input");
 const listElement = document.getElementById("list");
 const inputElement = document.getElementById("input-box");
-const loadingElement = document.getElementById('loading-box')
-let x = 0;
+const loadingElement = document.getElementById('loading-box');
 
 function fetchRenderComments() {
 
@@ -115,13 +114,10 @@ buttonElement.addEventListener("click", () => {
         
         return response.json();
       } else if (response.status === 400){
-        x = 1;
         throw new Error ('Имя и комментарий должны быть не короче 3 символов');
       } else if (response.status === 500) {
-        x = 2;
         throw new Error ('Сервер упал');
       } else {
-        x = 1;
         throw new Error ('Что то пошло не так');
       }
     })
@@ -136,15 +132,14 @@ buttonElement.addEventListener("click", () => {
     })
     .catch((error) => {
       console.log(error);
-      if (x === 0) {
-        alert('Кажется, у вас сломался интернет, попробуйте позже')
-      } else if (x === 2) {
+      if (error.message === 'Имя и комментарий должны быть не короче 3 символов' || error.message === 'Что то пошло не так') {
+        alert(error.message)
+      } else if (error.message === 'Сервер упал') {
         buttonElement.click();
       }
       else {
-        alert(error.message)
+        alert('Кажется, у вас сломался интернет, попробуйте позже')
       };
-      x=0;
       inputElement.classList.remove('loading');
       loadingElement.classList.add('loading');
     });
