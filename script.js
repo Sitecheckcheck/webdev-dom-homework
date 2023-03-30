@@ -4,17 +4,22 @@ const nameInputElement = document.getElementById("name-input");
 const textInputElement = document.getElementById("text-input");
 const listElement = document.getElementById("list");
 const inputElement = document.getElementById("input-box");
+const loadingElement = document.getElementById('loading-box');
 
 function fetchRenderComments() {
-  inputElement.innerHTML = "<p>Комментарий добавляется...</p>";
+
+  inputElement.classList.add('loading');
 
   return fetch(
     "https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments",
     {
       method: "GET",
     }
-  ).then((response) => {
-    response.json().then((responseData) => {
+  )
+    .then((response) => {
+      return response.json();
+    })
+    .then((responseData) => {
       const options = {
         year: "2-digit",
         month: "numeric",
@@ -34,28 +39,21 @@ function fetchRenderComments() {
         };
       });
 
-      inputElement.innerHTML = `<input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя">
-      <textarea id="text-input" type="textarea" class="add-form-text" placeholder="Введите ваш коментарий" rows="4"></textarea>
-      <div class="add-form-row">
-        <button id="add-button" class="add-form-button" disabled="" style="background-color: gray;">Написать</button>
-      </div>
-      <div class="add-form-row">
-        <button id="delete-button" class="add-form-button">
-          Удалить последний комментарий
-        </button>
-      </div>`;
+      inputElement.classList.remove('loading');
+      loadingElement.classList.add('loading');
 
       comments = appComments;
       renderComments();
-      const buttonDelElement = document.getElementById("delete-button");
-
-      buttonDelElement.addEventListener("click", () => {
-        comments.pop();
-        renderComments();
-      });
-    });   
-  }); 
+    })
+    .catch((error) => {
+      alert("Кажется, у вас сломался интернет, попробуйте позже");
+    });
 }
+
+buttonDelElement.addEventListener("click", () => {
+  comments.pop();
+  renderComments();
+});
 
 let comments = [];
 
@@ -90,14 +88,86 @@ const renderComments = () => {
 };
 
 fetchRenderComments();
+likeButton();
+checkParams();
 renderComments();
 
-function delay(interval = 300) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, interval);
-  });
+buttonElement.addEventListener("click", () => {
+  if (nameInputElement.value === "" || textInputElement.value === "") {
+    return;
+  }
+
+  inputElement.classList.add('loading');
+  loadingElement.classList.remove('loading');
+
+  fetch("https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments", {
+    method: "POST",
+    body: JSON.stringify({
+      text: textInputElement.value,
+      name: nameInputElement.value,
+      forceError: true,
+    }),
+  })
+    .then((response) => {
+      
+      if (response.status === 201) {
+        
+        return response.json();
+      } else if (response.status === 400){
+        throw new Error ('Имя и комментарий должны быть не короче 3 символов');
+      } else if (response.status === 500) {
+        throw new Error ('Сервер упал');
+      } else {
+        throw new Error ('Что то пошло не так');
+      }
+    })
+    .then(() => {
+      return fetchRenderComments();
+    })
+    .then(() => {
+      inputElement.classList.remove('loading');
+      loadingElement.classList.add('loading');
+      nameInputElement.value = "";
+      textInputElement.value = "";
+    })
+    .catch((error) => {
+      console.log(error);
+      if (error.message === 'Имя и комментарий должны быть не короче 3 символов' || error.message === 'Что то пошло не так') {
+        alert(error.message)
+      } else if (error.message === 'Сервер упал') {
+        buttonElement.click();
+      }
+      else {
+        alert('Кажется, у вас сломался интернет, попробуйте позже')
+      };
+      inputElement.classList.remove('loading');
+      loadingElement.classList.add('loading');
+    });
+});
+
+document.addEventListener("keyup", function (e) {
+  checkParams();
+  if (e.keyCode === 13) {
+    document.getElementById("add-button").click();
+  }
+});
+
+function checkParams() {
+  // const nameInputElement = document.getElementById("name-input");
+  // const textInputElement = document.getElementById("text-input");
+  // const buttonElement = document.getElementById("add-button");
+
+  if (
+    nameInputElement.value.length != 0 &&
+    textInputElement.value.length != 0
+  ) {
+    buttonElement.style.backgroundColor = "#bcec30";
+    buttonElement.disabled = false;
+  } else {
+    buttonElement.style.backgroundColor = "gray";
+    buttonElement.disabled = true;
+    buttonElement.style.opacity = "";
+  }
 }
 
 function likeButton() {
@@ -121,101 +191,13 @@ function likeButton() {
   }
 }
 
-likeButton();
-
-function checkParams() {
-  const nameInputElement = document.getElementById("name-input");
-  const textInputElement = document.getElementById("text-input");
-  const buttonElement = document.getElementById("add-button");
-
-  if (
-    nameInputElement.value.length != 0 &&
-    textInputElement.value.length != 0
-  ) {
-    buttonElement.style.backgroundColor = "#bcec30";
-    buttonElement.disabled = false;
-  } else {
-    buttonElement.style.backgroundColor = "gray";
-    buttonElement.disabled = true;
-    buttonElement.style.opacity = "";
-  }
-
-  buttonElement.addEventListener("click", () => {
-    if (nameInputElement.value === "" || textInputElement.value === "") {
-      return;
-    }
-
-    inputElement.innerHTML = "<p>Комментарий добавляется...</p>";
-
-    fetch("https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments", {
-      method: "POST",
-      body: JSON.stringify({
-        text: textInputElement.value,
-        name: nameInputElement.value,
-      }),
-    })
-      .then((response) => {
-        return response.json();
-      })
-      .then(() => {
-        return fetchRenderComments();
-      })
-      .then(() => {
-        inputElement.innerHTML = `<input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя">
-        <textarea id="text-input" type="textarea" class="add-form-text" placeholder="Введите ваш коментарий" rows="4"></textarea>
-        <div class="add-form-row">
-          <button id="add-button" class="add-form-button" disabled="" style="background-color: gray;">Написать</button>
-        </div>
-        <div class="add-form-row">
-          <button id="delete-button" class="add-form-button">
-            Удалить последний комментарий
-          </button>
-        </div>`;
-      });
-
-    nameInputElement.value = "";
-    textInputElement.value = "";
+function delay(interval = 300) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, interval);
   });
 }
-
-buttonElement.addEventListener("click", () => {
-  if (nameInputElement.value === "" || textInputElement.value === "") {
-    return;
-  }
-
-  inputElement.innerHTML = "<p>Комментарий добавляется...</p>";
-
-  fetch("https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments", {
-    method: "POST",
-    body: JSON.stringify({
-      text: textInputElement.value,
-      name: nameInputElement.value,
-    }),
-  })
-    .then((response) => {
-      return response.json();
-    })
-    .then(() => {
-      return fetchRenderComments();
-    })
-    .then(() => {
-      inputElement.innerHTML = `<input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя">
-      <textarea id="text-input" type="textarea" class="add-form-text" placeholder="Введите ваш коментарий" rows="4"></textarea>
-      <div class="add-form-row">
-        <button id="add-button" class="add-form-button" disabled="" style="background-color: gray;">Написать</button>
-      </div>
-      <div class="add-form-row">
-        <button id="delete-button" class="add-form-button">
-          Удалить последний комментарий
-        </button>
-      </div>`;
-    });
-
-  nameInputElement.value = "";
-  textInputElement.value = "";
-});
-
-renderComments();
 
 function inputClick() {
   const inputInElement = document.querySelectorAll(".add-form-text");
@@ -225,10 +207,3 @@ function inputClick() {
     });
   }
 }
-
-document.addEventListener("keyup", function (e) {
-  checkParams();
-  if (e.keyCode === 13) {
-    document.getElementById("add-button").click();
-  }
-});
