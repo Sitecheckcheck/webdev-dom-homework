@@ -1,5 +1,5 @@
 import { apiGet, apiPost } from "./requestAPI.js";
-import { getListComments } from "./listComment.js";
+import { getListElementComments } from "./listComment.js";
 import { renderComments } from "./render.js";
 
 const buttonElement = document.getElementById("add-button");
@@ -39,7 +39,9 @@ function fetchRenderComments() {
       loadingElement.classList.add('loading');
 
       comments = appComments;
-      renderComments(comments, listElement, getListComments);
+      renderComments(comments, listElement, getListElementComments);
+      likeButton();
+      inputClick();
     })
     .catch((error) => {
       alert("Кажется, у вас сломался интернет, попробуйте позже");
@@ -48,7 +50,9 @@ function fetchRenderComments() {
 
 buttonDelElement.addEventListener("click", () => {
   comments.pop();
-  renderComments(comments, listElement, getListComments);
+  renderComments(comments, listElement, getListElementComments);
+  likeButton();
+  inputClick();
 });
 
 let comments = [];
@@ -56,7 +60,7 @@ let comments = [];
 fetchRenderComments();
 likeButton();
 checkParams();
-renderComments(comments, listElement, getListComments);
+renderComments(comments, listElement, getListElementComments);
 
 buttonElement.addEventListener("click", () => {
   if (nameInputElement.value === "" || textInputElement.value === "") {
@@ -141,7 +145,9 @@ export function likeButton() {
           comments[i.dataset.index].likes++;
         }
         i.classList.remove("-loading-like");
-        renderComments(comments, listElement, getListComments);
+        renderComments(comments, listElement, getListElementComments);
+        likeButton();
+        inputClick();
       });
     });
   }

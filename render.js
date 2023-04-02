@@ -7,6 +7,4 @@ export const renderComments = (comments, element, getListComments) => {
     .join("");
 
   element.innerHTML = commentHtml;
-  likeButton();
-  inputClick();
 };

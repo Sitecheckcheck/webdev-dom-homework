@@ -3,11 +3,10 @@ export function apiGet() {
     "https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments",
     {
       method: "GET",
-    }
-  ).then((response) => {
-    return response.json();
-  });
+    })
+  .then(response => response.json());
 }
+  
 
 
 export function apiPost(textValue, nameValue) {
