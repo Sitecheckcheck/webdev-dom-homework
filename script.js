@@ -1,3 +1,7 @@
+import { apiGet, apiPost } from "./requestAPI.js";
+import { getListElementComments } from "./listComment.js";
+import { renderComments } from "./render.js";
+
 const buttonElement = document.getElementById("add-button");
 const buttonDelElement = document.getElementById("delete-button");
 const nameInputElement = document.getElementById("name-input");
@@ -10,15 +14,7 @@ function fetchRenderComments() {
 
   inputElement.classList.add('loading');
 
-  return fetch(
-    "https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments",
-    {
-      method: "GET",
-    }
-  )
-    .then((response) => {
-      return response.json();
-    })
+  apiGet()
     .then((responseData) => {
       const options = {
         year: "2-digit",
@@ -43,7 +39,9 @@ function fetchRenderComments() {
       loadingElement.classList.add('loading');
 
       comments = appComments;
-      renderComments();
+      renderComments(comments, listElement, getListElementComments);
+      likeButton();
+      inputClick();
     })
     .catch((error) => {
       alert("Кажется, у вас сломался интернет, попробуйте позже");
@@ -52,45 +50,17 @@ function fetchRenderComments() {
 
 buttonDelElement.addEventListener("click", () => {
   comments.pop();
-  renderComments();
+  renderComments(comments, listElement, getListElementComments);
+  likeButton();
+  inputClick();
 });
 
 let comments = [];
 
-const renderComments = () => {
-  const commentHtml = comments
-    .map((comment, index) => {
-      return `<li class="comment" data-index = '${index}'>
-      <div class="comment-header">
-        <div>${comment.name}</div>
-        <div>${comment.date}</div>
-      </div>
-      <div class="comment-body">
-        <div class="comment-text">
-          ${comment.text}
-        </div>
-      </div>
-      <div class="comment-footer">
-        <div class="likes">
-          <span class="likes-counter">${comment.likes}</span>
-          <button data-index ='${index}' class="like-button ${
-        comment.isLike ? "-active-like" : ""
-      }"></button>
-        </div>
-      </div>
-    </li>`;
-    })
-    .join("");
-
-  listElement.innerHTML = commentHtml;
-  likeButton();
-  inputClick();
-};
-
 fetchRenderComments();
 likeButton();
 checkParams();
-renderComments();
+renderComments(comments, listElement, getListElementComments);
 
 buttonElement.addEventListener("click", () => {
   if (nameInputElement.value === "" || textInputElement.value === "") {
@@ -100,14 +70,7 @@ buttonElement.addEventListener("click", () => {
   inputElement.classList.add('loading');
   loadingElement.classList.remove('loading');
 
-  fetch("https://webdev-hw-api.vercel.app/api/v1/pavel-danilov/comments", {
-    method: "POST",
-    body: JSON.stringify({
-      text: textInputElement.value,
-      name: nameInputElement.value,
-      forceError: true,
-    }),
-  })
+  apiPost(textInputElement.value, nameInputElement.value)
     .then((response) => {
       
       if (response.status === 201) {
@@ -153,9 +116,6 @@ document.addEventListener("keyup", function (e) {
 });
 
 function checkParams() {
-  // const nameInputElement = document.getElementById("name-input");
-  // const textInputElement = document.getElementById("text-input");
-  // const buttonElement = document.getElementById("add-button");
 
   if (
     nameInputElement.value.length != 0 &&
@@ -170,7 +130,7 @@ function checkParams() {
   }
 }
 
-function likeButton() {
+export function likeButton() {
   const likeElements = document.querySelectorAll(".like-button");
   for (const i of likeElements) {
     i.addEventListener("click", (event) => {
@@ -185,7 +145,9 @@ function likeButton() {
           comments[i.dataset.index].likes++;
         }
         i.classList.remove("-loading-like");
-        renderComments();
+        renderComments(comments, listElement, getListElementComments);
+        likeButton();
+        inputClick();
       });
     });
   }
@@ -199,7 +161,7 @@ function delay(interval = 300) {
   });
 }
 
-function inputClick() {
+export function inputClick() {
   const inputInElement = document.querySelectorAll(".add-form-text");
   for (const i of inputInElement) {
     i.addEventListener("click", (event) => {
